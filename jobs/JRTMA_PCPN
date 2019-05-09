@@ -25,11 +25,19 @@ export USHrtma=$HOMErtma/ush
 export PARMrtma=$HOMErtma/parm/pcprtma
 export EXECrtma=$HOMErtma/exec
 export SCRIPTrtma=$HOMErtma/scripts/pcprtma
-# coltbl.xwp.wbg and wmogrib.tbl: 
-export GEMFIX=${GEMFIX:-$HOMErtma/gempak/fix/pcprtma}
+# coltbl.xwp.wbg and g2varswmo2.tbl:
+export GEMFIX=$HOMErtma/gempak/fix/pcprtma
 
 if [ $RUN_ENVIR = dev ]; then   # for developers
-  . $HOMErtma/config/pcprtma/pcprtma_envir.sh
+  export DATAROOT=/gpfs/dell2/stmp/Ying.Lin/pcpanl
+  export COMINpcpanl=/gpfs/dell2/ptmp/$LOGNAME/pcpanl
+  export COMIN=$COMINpcpanl
+  export COMOUT=$COMIN
+  export TMPDIR=$DATAROOT
+  export SENDDBN=NO
+  export SENDDBN_NTC=NO
+  export SENDCOM=YES
+  export SENDDBN=NO
 else                            # for NCO
   export COMINpcpanl=${COMINpcpanl:-/com2/pcpanl/${envir}}
   export COMIN=${COMIN:-${COMROOT?:}/${NET}/${envir}}
@@ -49,7 +57,7 @@ fi
 
 # Shared by dev/NCO:
 # Note that COMIN, COMOUT and COMpcpanl above are prefixes (add $PDY for dirnam)
-export DATA=${DATA:-${DATAROOT:?}/${jobid:?}}
+export DATA=${DATAROOT}/${jobid}
 mkdir -p $DATA
 export jlogfile=$DATAROOT/jlogfile
 
@@ -58,6 +66,17 @@ export jlogfile=$DATAROOT/jlogfile
 ####################################
 export pgmout="OUTPUT.$$"
 
+#########################################################################
+# Add some prod utilities to working directory
+#########################################################################
+echo "step ############# break ##############################" > ./break
+cp $UTILROOT/ush/err_chk   .; chmod +x err_chk
+cp $UTILROOT/ush/err_exit  .; chmod +x err_exit
+cp $UTILROOT/ush/prep_step .; chmod +x prep_step
+cp $UTILROOT/ush/postmsg   .; chmod +x postmsg
+cp $UTILROOT/ush/setpdy.sh .; chmod +x setpdy.sh
+
+#########################################
 #########################################
 # Run setpdy and initialize PDY variables
 #########################################
@@ -80,14 +99,14 @@ fi
 
 postmsg $jlogfile "Produce precip RTMA analysis over the CONUS"
 
-mkdir -m 775 -p $COMOUT/$RUN.${PDY}/wmo
-
-env
-
 # So that we can get to the actual output quickly:
 echo "Actual output starts here:"
 
 date
+
+mkdir -m 775 -p $COMOUT/$RUN.${PDY}/wmo
+
+env
 
 #############################################################
 # Execute the script.

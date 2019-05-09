@@ -1,0 +1,75 @@
+#!/bin/ksh
+#BSUB -J pcp_rtma
+#BSUB -oo /ptmpp2/Ying.Lin/cron.out/rtma.%J
+#BSUB -eo /ptmpp2/Ying.Lin/cron.out/rtma.%J
+#BSUB -cwd /stmpp1/Ying.Lin
+#BSUB -L /bin/sh
+#BSUB -n 1
+#BSUB -q "dev"
+#BSUB -R span[ptile=1]
+#BSUB -W 0:15
+#BSUB -P HOURLY-T2O
+set -x
+
+. /usrx/local/Modules/3.2.9/init/ksh
+module load prod_util
+module load prod_envir
+module load grib_util/v1.0.2
+module load gempak cfp
+
+export rtma_ver=v2.7.0
+export RUN_ENVIR=dev   # or nco
+export envir=dev       # or prod/para/test
+
+export MAILTO="ncep.list.sos@noaa.gov"
+export MAILCC="ncep.list.spa-helpdesk@noaa.gov,ying.lin@noaa.gov"
+
+# EXPORT list here
+# CALL executable job script here
+
+# This script has two optional arguments:
+#   arg 1: yyyymmddhh 
+#   arg 2: debug (if in debug mode, do not delete the working directory)
+#   arg 3: Single mode - only make erly/mid/late run (one of them, as
+#          specified by argument.  No POE.
+
+# arg #1: pdyhh=yyyymmddhh: in this mode, the 'erly' ST2 analysis would 
+#   be the one hour ending at $pdyhh, 'mid' ST2 would be ${pdyhh}m6, 
+#   and 'late' ST2 would be ${pdyhh}m18.  If this argument is not provided,
+#   then pdyhh is set to the current time, in the jobs script. 
+
+export retro=N
+if [ $# -ge 1 ]; then
+  export retro=Y
+  export pdyhh=$1
+else
+  pdyhh=`date -u +%Y%m%d%H`
+fi
+
+# retro test
+#export retro=Y
+#export pdyhh=2017071118
+# retro test
+export cyc=`echo $pdyhh | cut -c 9-10`
+
+# arg #2: optional debug mode - the working directory is not deleted by the 
+# JOBS script
+export KEEPDATA=YES
+if [ $# -ge 2 ]; then
+  arg2=$2
+  if [ $arg2 = debug ]; then
+    export KEEPDATA=YES
+  fi
+fi
+
+if [ "$envir" = dev ]; then 
+  export HOMErtma=/meso/save/$LOGNAME/pcpanl/rtma.${rtma_ver}
+  # outid is what prod uses to name the job output file, e.g.
+  # nam_pcpn_anal_2033.o2467312  (outid.$o${pid}
+  # below is my approximation to prod outid:
+# 
+  $HOMErtma/jobs/JRTMA_PCPN
+  $HOMErtma/util.dev/send2rzdm.ksh
+else
+  /nw${envir}/jobs/JRTMA_PCPN
+fi

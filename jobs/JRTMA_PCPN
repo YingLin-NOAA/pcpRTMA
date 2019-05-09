@@ -1,0 +1,103 @@
+#!/bin/sh
+set -x
+
+date
+export PS4=' $SECONDS + '
+echo cyc is ${cyc:?}                 # ensure cyc defined
+echo envir is ${envir:?}             # ensure envir defined
+echo rtma_ver is ${rtma_ver:?}         # ensure pcprtmaurma_ver defined
+
+###############################################################
+# Specify NET, RUN, and cycle
+###############################################################
+export NET=rtma
+export RUN=pcprtma
+export cycle=t${cyc}z
+
+####################################
+# Specify paths
+####################################
+# For userdev, HOMErtma is set in the dev LSF script. 
+export HOMErtma=${HOMErtma:-${NWROOT:?}/rtma.${rtma_ver}}
+export FIXrtma=$HOMErtma/fix/pcprtma
+export USHrtma=$HOMErtma/ush
+# Parm files needed for toc2grib2, to add WMO header:
+export PARMrtma=$HOMErtma/parm/pcprtma
+export EXECrtma=$HOMErtma/exec
+export SCRIPTrtma=$HOMErtma/scripts/pcprtma
+# coltbl.xwp.wbg and wmogrib.tbl: 
+export GEMFIX=${GEMFIX:-$HOMErtma/gempak/fix/pcprtma}
+
+if [ $RUN_ENVIR = dev ]; then   # for developers
+  . $HOMErtma/config/pcprtma/pcprtma_envir.sh
+else                            # for NCO
+  export COMINpcpanl=${COMINpcpanl:-/com2/pcpanl/${envir}}
+  export COMIN=${COMIN:-${COMROOT?:}/${NET}/${envir}}
+  export COMOUT=${COMOUT:-$COMROOT/${NET}/${envir}}
+# Starting in v2.7.0: send pcprtma files with WMO headers to 
+#   $COMOUT/${RUN}.$day0/wmo/ instead of PCOM
+#  export PCOM=${PCOM:-$PCOMROOT/${NET}}/${RUN}
+
+  ####################################
+  # SENDCOM  - Copy Files From TMPDIR to $com
+  # SENDDBN  - Send files to OSO
+  ####################################
+  export SENDCOM=${SENDCOM:-YES}
+  export SENDDBN=${SENDDBN:-YES}
+  export SENDDBN_NTC=${SENDDBN_NTC:-YES}
+fi
+
+# Shared by dev/NCO:
+# Note that COMIN, COMOUT and COMpcpanl above are prefixes (add $PDY for dirnam)
+export DATA=${DATA:-${DATAROOT:?}/${jobid:?}}
+mkdir -p $DATA
+export jlogfile=$DATAROOT/jlogfile
+
+####################################
+# Determine Job Output Name on System
+####################################
+export pgmout="OUTPUT.$$"
+
+#########################################
+# Run setpdy and initialize PDY variables
+#########################################
+cd $DATA
+
+if [ "${RUN_ENVIR,,}" = "nco" ]; then  ### for prod/para/test (all non-dev)
+  setpdy.sh 9 1
+  . PDY
+else                          ### for developer
+  if [ $retro = Y ]; then
+    export PDY=${pdyhh:0:8}
+  fi
+  setpdy.sh 9 1  # Create PDY file for PDYm9, PDYm8, ..., PDYp1
+  . PDY 
+fi
+
+##############################################
+# Define COM directories
+##############################################
+
+postmsg $jlogfile "Produce precip RTMA analysis over the CONUS"
+
+mkdir -m 775 -p $COMOUT/$RUN.${PDY}/wmo
+
+env
+
+# So that we can get to the actual output quickly:
+echo "Actual output starts here:"
+
+date
+
+#############################################################
+# Execute the script.
+#############################################################
+$SCRIPTrtma/exrtma_pcpn.sh
+$SCRIPTrtma/exrtma_pcpn_plot.sh
+
+postmsg $jlogfile "$0 completed normally"
+
+if [ "${KEEPDATA^^}" != YES ]; then
+  rm -rf $DATA
+fi
+

@@ -1,4 +1,4 @@
-#!/bin/ksh
+#!/bin/ksh -x
 
 #######################################################################
 #    Plot the hour's RTMA analysis (legacy product; pcp urma files are
@@ -6,9 +6,12 @@
 #######################################################################
 #
 # Steps:
-#   1. Prep; copy over the two GEMPAK fix files (coltbl.xwp.wbg, renamed
-#      to coltbl.xwp, and g2varswmo2.tbl) 
+#   1. Prep; copy over the two GEMPAK fix files (coltbl.xwp.wbg and 
+#      wmogrib.tbl) 
 #   2. Plot hourly precip RTMA
+#      - convert precip RTMA to GRIB1 (to plot using GEMPAK)
+#      - map to G218
+#      - plot
 
 set -x
 
@@ -24,6 +27,7 @@ cd $PLOTDIR
 pgmout=out.$date0
 
 # For a white background:
+# cp /nwprod/gempak/fix/coltbl.xwp.wbg coltbl.xwp
 cp $GEMFIX/coltbl.xwp.wbg coltbl.xwp
 
 # Missing value for precip set to -9999. so we can distinguish zero value 

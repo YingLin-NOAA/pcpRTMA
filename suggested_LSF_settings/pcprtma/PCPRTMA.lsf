@@ -24,7 +24,7 @@ module load grib_util/1.0.6
 module use -a /gpfs/dell1/nco/ops/nwprod/modulefiles/
 module load gempak/7.3.1
 
-export rtma_ver=v2.7.1
+export rtma_ver=v2.8.0
 export RUN_ENVIR=dev   # or nco
 export envir=dev       # or prod/para/test
 
@@ -48,15 +48,18 @@ export MAILCC="ncep.list.spa-helpdesk@noaa.gov,ying.lin@noaa.gov"
 export retro=N
 if [ $# -ge 1 ]; then
   export retro=Y
-  export pdyhh=$1
+  export date0=$1
+  pdyhh=`$NDATE +1 $date0`
 else
-  pdyhh=`date -u +%Y%m%d%H`
+  export pdyhh=`date -u +%Y%m%d%H`
 fi
 
 # retro test
 #export retro=Y
-#export pdyhh=2017071118
+#export date0=2019062813
+#pdyhh=`$NDATE +1 $date0`
 # retro test
+
 export cyc=`echo $pdyhh | cut -c 9-10`
 
 # arg #2: optional debug mode - the working directory is not deleted by the 
@@ -75,6 +78,7 @@ if [ "$envir" = dev ]; then
   # outid is what prod uses to name the job output file, e.g.
   # nam_pcpn_anal_2033.o2467312  (outid.$o${pid}
   # below is my approximation to prod outid:
+  export outid=rtma_`date +%H%M`
 # 
   $HOMErtma/jobs/JRTMA_PCPN
   $HOMErtma/util.dev/send2rzdm.ksh

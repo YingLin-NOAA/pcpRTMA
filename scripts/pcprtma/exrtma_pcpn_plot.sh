@@ -12,8 +12,7 @@
 
 set -x
 
-# cyc used to determine whether it is time to process the 6h/24h Stage II
-date0=${PDY}${cyc}
+date0=`$NDATE -1 ${PDY}${cyc}`
 
 export PLOTDIR=$DATA/plot
 

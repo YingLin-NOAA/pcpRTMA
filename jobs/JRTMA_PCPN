@@ -28,18 +28,19 @@ export SCRIPTrtma=$HOMErtma/scripts/pcprtma
 # coltbl.xwp.wbg and g2varswmo2.tbl:
 export GEMFIX=$HOMErtma/gempak/fix/pcprtma
 
+export MRMSDIR=${MRMSDIR:-/gpfs/dell1/nco/ops/dcom/prod/ldmdata/obs/upperair/mrms/conus/GaugeCorr_QPE}
+
 if [ $RUN_ENVIR = dev ]; then   # for developers
   export DATAROOT=/gpfs/dell2/stmp/Ying.Lin/pcpanl
-  export COMINpcpanl=/gpfs/dell2/ptmp/$LOGNAME/pcpanl
-  export COMIN=$COMINpcpanl
+  export COMIN=/gpfs/dell2/ptmp/$LOGNAME/pcpanl
   export COMOUT=$COMIN
   export TMPDIR=$DATAROOT
   export SENDDBN=NO
   export SENDDBN_NTC=NO
   export SENDCOM=YES
   export SENDDBN=NO
+  export jobid="${outid}.o$$"
 else                            # for NCO
-  export COMINpcpanl=${COMINpcpanl:-/com2/pcpanl/${envir}}
   export COMIN=${COMIN:-${COMROOT?:}/${NET}/${envir}}
   export COMOUT=${COMOUT:-$COMROOT/${NET}/${envir}}
 # Starting in v2.7.0: send pcprtma files with WMO headers to 
@@ -59,6 +60,8 @@ fi
 # Note that COMIN, COMOUT and COMpcpanl above are prefixes (add $PDY for dirnam)
 export DATA=${DATAROOT}/${jobid}
 mkdir -p $DATA
+cd $DATA
+
 export jlogfile=$DATAROOT/jlogfile
 
 ####################################
@@ -80,7 +83,6 @@ cp $UTILROOT/ush/setpdy.sh .; chmod +x setpdy.sh
 #########################################
 # Run setpdy and initialize PDY variables
 #########################################
-cd $DATA
 
 if [ "${RUN_ENVIR,,}" = "nco" ]; then  ### for prod/para/test (all non-dev)
   setpdy.sh 9 1
@@ -113,6 +115,9 @@ env
 #############################################################
 $SCRIPTrtma/exrtma_pcpn.sh
 $SCRIPTrtma/exrtma_pcpn_plot.sh
+if [ $RUN_ENVIR = dev ]; then   # for developers
+  bsub < $HOMErtma/util.dev/send2rzdm.sh
+fi
 
 postmsg $jlogfile "$0 completed normally"
 

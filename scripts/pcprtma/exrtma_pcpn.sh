@@ -19,8 +19,9 @@ export JDATA=$DATA
 DATA=$DATA
 mkdir -p $DATA
 cd $DATA
-# $PDY and $cyc are exported in J-job.
-date0=${PDY}${cyc}
+# $PDY and $cyc are exported in J-job.  pcpURMA to be processed is the hour
+# before (unless running in retro - i.e. date0 set in LSF)
+date0=${date0:-`$NDATE -1 ${PDY}${cyc}`}
 
 echo "--------------------------------------------"
 echo " "Begin Precip RTMA analysis for $date0"    "
@@ -29,80 +30,51 @@ postmsg $jlogfile "Begin Precip RTMA analysis for $run version of $date0"
 
 ########################################
 
-day0=`echo $date0 | cut -c1-8`
+day0=${date0:0:8}
+hr0=${date0:8:2}
 
 cd $DATA
 
 pwd
 
-# The mask will be used by both the RTMA and hourly ConUS URMA:
-cp $FIXrtma/stage3_mask.grb .
-
 #######################################################################
-# precip RTMA: 
-#   1) Combine early Stage II and first run Stage IV (if at least one exists)
-#   2) Map the merged st2n4 file to the 2.5km and 5km ConUS NDFD grid 
-#      for precip RTMA
+# precip RTMA from gauge QC'd MRMS:
+#   1) use wgrib2 to process raw MRMS file:
+#        - Assign points with values of -3 as 'missing'
+#        - change field name to APCP
+#        - change level type to "surface"
+#        - Change 
+#        - TBD: Change the generating process number, PDS(2) from 152 (Stage II)
+#          to 109 (RTMA products):
+#   2) Map the MRMS file from step 1 to ConUS grid 184
+#
+rawmrms=GaugeCorr_QPE_01H_00.00_${day0}-${hr0}0000.grib2
+cp $MRMSDIR/$rawmrms.gz .
+err=$?
+if [ $err -eq 0 ]; then
+  gunzip $rawmrms.gz
+#  $WGRIB2 $rawmrms -rpn "dup:-3:!=:mask" -set_var APCP -set_lev surface -set_scaling -1 0 -set_bitmap 1 -set_grib_type c3 -grib_out mrms4rtma.$date0
 
-ST2file=ST2ml${date0}.Grb
-ST4file=ST4.${date0}.01h
-st2n4file=st2n4.${date0}.01h
+$WGRIB2 -rpn "dup:-3:!=:mask" \
+  -set center 7 -set subcenter 4 \
+  -set local_table 1 \
+  -set table_1.2 2 \
+  -set table_1.4 0 \
+  -set table_4.3 0 \
+  -set table_4.11 2 \
+  -set_var APCP -set_lev surface \
+  -set_ftime "0-1 hour acc fcst" -set_date -1hr \
+  -set_scaling -1 0 -set_bitmap 1 -set_grib_type c3 \
+   $rawmrms -grib_out mrms4rtma.$date0
 
-ST2exist=YES
-cp $COMINpcpanl/pcpanl.$day0/$ST2file.gz .
-if [ $? -eq 0 ]; 
-then 
-  gunzip $ST2file
-else
-  ST2exist=NO
-fi
-
-ST4exist=YES
-cp $COMINpcpanl/pcpanl.$day0/$ST4file.gz .
-if [ $? -eq 0 ]; then 
-  gunzip $ST4file
-else
-  ST4exist=NO
-fi
-
-if [ $ST2exist = YES -o $ST4exist = YES ]; then
-  RTMAmake=YES
-else
-  RTMAmake=NO
-fi
-
-if [ $RTMAmake = YES ]; then  # ST2 or ST4 (at least one) exists for this hour
-  export pgm=pcprtma_merge2n4
-  . prep_step
-  ln -sf $ST2file                     fort.11
-  ln -sf $ST4file                     fort.12
-  ln -sf stage3_mask.grb              fort.13
-  ln -sf $st2n4file                   fort.51
-  ${EXECrtma}/pcprtma_merge2n4
-  export err=$?; echo "     err=$err"; err_chk
-  rm fort.11 fort.12 fort.13 fort.51
 
 # The 2.5km RTMA precip:
   rtmafile=pcprtma2.${date0}.grb2
 
-# Change the generating process number, PDS(2) from 152 (Stage II) to 109 
-# (RTMA products):
-  export pgm=pcprtma_changepds
-
-  ln -sf $st2n4file                   fort.11
-  ln -sf $st2n4file.chgdpds           fort.51
-
-  $EXECrtma/pcprtma_changepds
-  export err=$?; echo "     err=$err"; err_chk
-  rm fort.11 fort.51
-
-# Convert to GRIB2:
-  $CNVGRIB -g12 $st2n4file.chgdpds ${st2n4file}.grb2
-
   NDFDgrid="30 1 0 6371200 0 0 0 0 2145 1377 20191999 238445999 8 25000000 265000000 2539703 2539703 0 64 25000000 25000000 0 0"
 
 # Map to 2.5km NDFD grid:
-  $COPYGB2 -g "$NDFDgrid" -i3 -x ${st2n4file}.grb2 $rtmafile
+  $COPYGB2 -g "$NDFDgrid" -i3 -x mrms4rtma.$date0 $rtmafile
 
 #####################################################################
 #    Process PRECIP. RTMA FOR AWIPS
@@ -115,8 +87,9 @@ if [ $RTMAmake = YES ]; then  # ST2 or ST4 (at least one) exists for this hour
   export FORT31=" "
   export FORT51="grib2.t${cyc}z.awprtmapcp.184"
   startmsg
-  $TOCGRIB2 < $PARMrtma/grib2_pcprtma_g184
-  export err=$?; echo "     err=$err"; err_chk
+# not working yet
+#  $TOCGRIB2 < $PARMrtma/grib2_pcprtma_g184
+#  export err=$?; echo "     err=$err"; err_chk
 
   if test $SENDCOM = 'YES'
   then
@@ -138,8 +111,8 @@ if [ $RTMAmake = YES ]; then  # ST2 or ST4 (at least one) exists for this hour
   # GOOD RUN
   postmsg $jlogfile "$0 completed normally"
   #####################################################################
-else  # neither ST2 or ST4 exists for this hour
-  echo -e "WARNING: Neither Stage II/IV file exists for $date0, no RTMA\n" >>$DATA/emailmsg.txt
+else  # 
+  echo -e "WARNING: failed to obtain MRMS file for $date0, no RTMA\n" >>$DATA/emailmsg.txt
 
   if [ "$envir" = "dev" ]; then 
     echo '############### NON-EMAIL ALERT #####################################'
@@ -152,10 +125,10 @@ else  # neither ST2 or ST4 exists for this hour
       mail.py < $DATA/emailmsg.txt
     fi
   fi 
-  postmsg $jlogfile "Neither Stage II/IV file exists for $date0, no RTMA"
+  postmsg $jlogfile "Failed to obtain MRMS file for $date0, no RTMA"
   
-fi # if we should make the RTMA file for this hour (i.e. either the ST2 or 
-   # the ST4 file exists for this hour)
+fi # if we should make the RTMA file for this hour (i.e. if the MRMS file 
+   $ exists for $date0)
 
 
 ############## END OF SCRIPT #######################

@@ -7,6 +7,11 @@ echo cyc is ${cyc:?}                 # ensure cyc defined
 echo envir is ${envir:?}             # ensure envir defined
 echo rtma_ver is ${rtma_ver:?}         # ensure pcprtmaurma_ver defined
 
+if [ $RUN_ENVIR = dev -a $retro = Y ]; then   # for developers
+  pdyhh=$date0
+  cyc=${date0:8:2}
+  echo 'retro run, cyc=', $cyc
+fi 
 ###############################################################
 # Specify NET, RUN, and cycle
 ###############################################################
@@ -28,7 +33,9 @@ export SCRIPTrtma=$HOMErtma/scripts/pcprtma
 # coltbl.xwp.wbg and g2varswmo2.tbl:
 export GEMFIX=$HOMErtma/gempak/fix/pcprtma
 
-export MRMSDIR=${MRMSDIR:-/gpfs/dell1/nco/ops/dcom/prod/ldmdata/obs/upperair/mrms/conus/GaugeCorr_QPE}
+MRMSDIR=${MRMSDIR:-/gpfs/dell1/nco/ops/dcom/prod/ldmdata/obs/upperair/mrms/conus}
+export MRMSQPEDIR=$MRMSDIR/RadarOnly_QPE
+export MRMSRQIDIR=$MRMSDIR/RadarQualityIndex
 
 if [ $RUN_ENVIR = dev ]; then   # for developers
   export DATAROOT=/gpfs/dell2/stmp/Ying.Lin/pcpanl
@@ -101,23 +108,22 @@ fi
 
 postmsg $jlogfile "Produce precip RTMA analysis over the CONUS"
 
-# So that we can get to the actual output quickly:
-echo "Actual output starts here:"
-
 date
 
 mkdir -m 775 -p $COMOUT/$RUN.${PDY}/wmo
 
 env
 
+# So that we can get to the actual output quickly:
+echo "Actual output starts here:"
+
 #############################################################
 # Execute the script.
 #############################################################
 $SCRIPTrtma/exrtma_pcpn.sh
 $SCRIPTrtma/exrtma_pcpn_plot.sh
-if [ $RUN_ENVIR = dev ]; then   # for developers
-  bsub < $HOMErtma/util.dev/send2rzdm.sh
-fi
+
+# dev send to rzdm is done in PCPRTMA.lsf
 
 postmsg $jlogfile "$0 completed normally"
 

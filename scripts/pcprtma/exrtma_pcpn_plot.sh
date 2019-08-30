@@ -12,7 +12,7 @@
 
 set -x
 
-date0=`$NDATE -1 ${PDY}${cyc}`
+date0=${date0:-${PDY}${cyc}}
 
 export PLOTDIR=$DATA/plot
 
@@ -26,8 +26,11 @@ pgmout=out.$date0
 cp $GEMFIX/coltbl.xwp.wbg coltbl.xwp
 
 # Missing value for precip set to -9999. so we can distinguish zero value 
-# areas (plotted in vanilla) from no data areas (white):
-cp $GEMFIX/g2varswmo2.tbl .
+# areas (plotted in vanilla) from no data areas (white).
+# 2019/08: rename the file to g2varswmo1.tbl, since we are switching to using
+#   MRMS for pcprtma and the MRMS file uses GRIB2 Table 1 instead of Table 2, 
+#   and I can't change that via wgrib2. 
+cp $GEMFIX/g2varswmo2.tbl g2varswmo1.tbl 
 
 # Plot precip RTMA
 RTMAFILE=pcprtma2.$date0.grb2

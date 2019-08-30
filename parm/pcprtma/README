@@ -2,3 +2,9 @@ WMO headers in this directory.  Last column: names of parm file prior to
                                 pcpanl.v3.0.0/rtma.v2.6.0
   grib2_pcprtma_g184  - ConUS RTMA (2.5km grid) (was grib2_hrestmapcp_ndfd.184)
 
+2019/08/29, for v2.8.0
+  Changed PDT(10) from 1 to 102 ('0 m above mean sea level' as in the
+  original MRMS file, because when I change it to 'surface' via 
+  "wgrib2 -set_lev surface" it messes up the "PRODUCT TEMPLATE 4. 8:" (degrib2)
+  big time.
+  Changed PDT(14) - scale factor - from 0 to 1, because MRMS has '1' for this.

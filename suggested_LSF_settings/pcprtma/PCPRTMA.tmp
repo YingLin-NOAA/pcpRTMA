@@ -56,6 +56,7 @@ else
   export pdyhh=`date -u +%Y%m%d%H`
 fi
 
+export MRMSDIR=/gpfs/dell2/ptmp/Ying.Lin/mrms
 # retro test
 #export retro=Y
 #export date0=2019062813
@@ -83,7 +84,7 @@ if [ "$envir" = dev ]; then
   export outid=rtma_`date +%H%M`
 # 
   $HOMErtma/jobs/JRTMA_PCPN
-  bsub < $HOMErtma/util.dev/send2rzdm.sh
+  $HOMErtma/util.dev/send2rzdm.sh $date0
 else
   /nw${envir}/jobs/JRTMA_PCPN
 fi

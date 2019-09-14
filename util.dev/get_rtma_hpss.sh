@@ -2,8 +2,10 @@
 set -x
 
 #day=$1
-day1=20190731
-day2=20190731
+#day1=20190731
+#day2=20190731
+day1=20171217
+day2=20171217
 
 # theia:
 # finddate=/scratch4/NCEPDEV/rstprod/nwprod/util/ush/finddate.sh

@@ -55,8 +55,9 @@ if [ $# -ge 1 ]; then
 else
   export pdyhh=`date -u +%Y%m%d%H`
 fi
+# For older re-runs with downloaded MRMS data:
+#export MRMSDIR=/gpfs/dell2/ptmp/Ying.Lin/mrms
 
-export MRMSDIR=/gpfs/dell2/ptmp/Ying.Lin/mrms
 # retro test
 #export retro=Y
 #export date0=2019062813

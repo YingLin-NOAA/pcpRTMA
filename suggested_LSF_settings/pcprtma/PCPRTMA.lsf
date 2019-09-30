@@ -1,32 +1,27 @@
 #!/bin/bash
 #BSUB -J pcp_rtma
 #BSUB -P RTMA-T2O
-#BSUB -o /gpfs/dell2/ptmp/Ying.Lin/cron.out/rtma.%J
-#BSUB -e /gpfs/dell2/ptmp/Ying.Lin/cron.out/rtma.%J
+#BSUB -o /ptmpp1/emc.rtmapara/Ying.Lin/cron.out/pcprtma.%J
+#BSUB -e /ptmpp1/emc.rtmapara/Ying.Lin/cron.out/pcprtma.%J
 #BSUB -W 0:10
 #BSUB -n 1
-#BSUB -q "dev_shared"
+#BSUB -q "devonprod2_shared"
 #BSUB -R "rusage[mem=1500]"
 #BSUB -R affinity[core(1)]
 #BSUB -R span[ptile=1]
 
 set -x
 
+. /usrx/local/Modules/3.2.9/init/ksh
 module purge
-module load EnvVars/1.0.2
-module load lsf/10.1
-module load ips/18.0.1.163
-module load impi/18.0.1
-module load CFP/2.0.1
+module load prod_util
+module load prod_envir
+module load grib_util/v1.1.1
+#module load ibmpe lsf      # for bsub'ing 'send2rzdm'
+module load ibmpe/1.3.0.12 # for gempak
+module load gempak cfp
 
-module load prod_util/1.1.0
-module load prod_envir/1.0.2
-module load grib_util/1.0.6
-
-module use -a /gpfs/dell1/nco/ops/nwprod/modulefiles/
-module load gempak/7.3.1
-
-export rtma_ver=v2.8.0
+export rtma_ver=v2.8.0_p2
 export RUN_ENVIR=dev   # or nco
 export envir=dev       # or prod/para/test
 
@@ -75,7 +70,7 @@ if [ $# -ge 2 ]; then
 fi
 
 if [ "$envir" = dev ]; then 
-  export USERHOME=/gpfs/dell2/emc/verification/noscrub/Ying.Lin
+  export USERHOME=/meso/save/Ying.Lin
   export HOMErtma=$USERHOME/pcpanl/rtma.${rtma_ver}
   # outid is what prod uses to name the job output file, e.g.
   # nam_pcpn_anal_2033.o2467312  (outid.$o${pid}
@@ -83,7 +78,8 @@ if [ "$envir" = dev ]; then
   export outid=rtma_`date +%H%M`
 # 
   $HOMErtma/jobs/JRTMA_PCPN
-  bsub < $HOMErtma/util.dev/send2rzdm.sh
+# Do the send2rzdm from my own acct, in order to write to send2rzdm:
+# bsub < $HOMErtma/util.dev/send2rzdm.sh
 else
   /nw${envir}/jobs/JRTMA_PCPN
 fi

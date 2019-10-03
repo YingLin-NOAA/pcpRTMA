@@ -38,8 +38,8 @@ export MRMSQPEDIR=$MRMSDIR/RadarOnly_QPE
 export MRMSRQIDIR=$MRMSDIR/RadarQualityIndex
 
 if [ $RUN_ENVIR = dev ]; then   # for developers
-  export DATAROOT=/stmpp1/emc.rtmapara/Ying.Lin/pcpanl
-  export COMIN=/ptmpp1/emc.rtmapara/Ying.Lin/pcpanl
+  export DATAROOT=/stmpp2/emc.rtmapara/Ying.Lin/pcpanl
+  export COMIN=/ptmpp2/emc.rtmapara/com/rtma/para
   export COMOUT=$COMIN
   export TMPDIR=$DATAROOT
   export SENDDBN=NO

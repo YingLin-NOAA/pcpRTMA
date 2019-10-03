@@ -1,8 +1,8 @@
 #!/bin/bash
 #BSUB -J pcprtma__send2rzdm
 #BSUB -P RTMA-T2O
-#BSUB -o /ptmpp1/Ying.Lin/cron.out/send2rzdm_rtma.%J
-#BSUB -e /ptmpp1/Ying.Lin/cron.out/send2rzdm_rtma.%J
+#BSUB -o /ptmpp1/Ying.Lin/cron.out/send2rzdm_rtma_p2.%J
+#BSUB -e /ptmpp1/Ying.Lin/cron.out/send2rzdm_rtma_p2.%J
 #BSUB -n 1
 #BSUB -q "transfer"
 #BSUB -W 0:10
@@ -29,7 +29,7 @@ fi
 day0=`echo $date0 | cut -c 1-8`
 hr0=`echo $date0 | cut -c 9-10`
 
-COMOUTrtma=/ptmpp1/emc.rtmapara/Ying.Lin/pcpanl/pcprtma.$day0
+COMOUTrtma=/ptmpp2/emc.rtmapara/com/rtma/para/pcprtma.$day0
 
 RZDMDIR=/home/ftp/emc/mmb/precip/rtma.v2.8.0/pcprtma.$day0
 ssh wd22yl@emcrzdm "mkdir -p $RZDMDIR/wmo"

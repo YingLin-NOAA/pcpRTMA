@@ -1,11 +1,8 @@
 #!/bin/sh
 set -x
 
-#day=$1
-#day1=20190731
-#day2=20190731
-day1=20171217
-day2=20171217
+day1=20190828
+day2=20190930
 
 # theia:
 # finddate=/scratch4/NCEPDEV/rstprod/nwprod/util/ush/finddate.sh
@@ -13,18 +10,19 @@ day2=20171217
 UTILROOT=/gpfs/dell1/nco/ops/nwprod/prod_util.v1.1.2
 FINDDATE=$UTILROOT/ush/finddate.sh
 
-day=$day1
+day=$day2
 
-wrkdir=/gpfs/dell2/emc/verification/noscrub/Ying.Lin/prod_rtma_save
+datadir=/gpfs/dell2/ptmp/Ying.Lin/prod_rtma
 
-while [ $day -le $day2 ];
+while [ $day -ge $day1 ];
 do 
-  mkdir -p $wrkdir/pcprtma.$day
-  cd $wrkdir/pcprtma.$day
+  mkdir -p $datadir/pcprtma.$day
+  cd $datadir/pcprtma.$day
   yyyy=`echo $day | cut -c 1-4`
   yyyymm=`echo $day | cut -c 1-6`
-  htar xvf /NCEPPROD/hpssprod/runhistory/rh${yyyy}/$yyyymm/$day/com2_rtma_prod_pcprtma.$day.tar
-  day=`$FINDDATE $day d+1`
+#  htar xvf /NCEPPROD/hpssprod/runhistory/rh${yyyy}/$yyyymm/$day/com2_rtma_prod_pcprtma.$day.tar
+  htar xvf /NCEPPROD/hpssprod/runhistory/rh${yyyy}/$yyyymm/$day/gpfs_dell2_nco_ops_com_rtma_prod_pcprtma.$day.tar
+  day=`$FINDDATE $day d-1`
 done
 
 exit

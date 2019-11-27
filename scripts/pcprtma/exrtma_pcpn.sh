@@ -185,6 +185,12 @@ if [ $err -eq 0 ]; then
     -new_grid ${WG2g184} \
     $rtmafile
 
+# Make a Stage II look-alike from the pcpRTMA:
+  $CNVGRIB -g21 $rtmafile $rtmafile.grb1
+  gridhrap="255 5 1121 881 23117 -119023 8 -105000 4763 4763 0 64"
+  $COPYGB -g "$gridhrap" -i3 -x $rtmafile.grb1 ST2ml${date0}.Grb
+  gzip ST2ml${date0}.Grb
+
 #####################################################################
 #    Process PRECIP. RTMA FOR AWIPS
 #####################################################################
@@ -246,6 +252,7 @@ fi # if RQI file exists
 if test $SENDCOM = 'YES'
 then
   cp pcprtma2.${date0}.grb2 rqirtma.${date0}.grb2 $COMOUT/${RUN}.$day0/.
+  cp ST2ml${date0}.Grb.gz $COMpcpanl/pcpanl.$day0/.
   cp grib2.t${cyc}z.awprtmapcp.184  $COMOUT/${RUN}.$day0/wmo/.
 fi
 

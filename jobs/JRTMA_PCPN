@@ -41,6 +41,7 @@ if [ $RUN_ENVIR = dev ]; then   # for developers
   export DATAROOT=/stmpp2/emc.rtmapara/Ying.Lin/pcpanl
   export COMIN=/ptmpp2/emc.rtmapara/com/rtma/para
   export COMOUT=$COMIN
+  export COMpcpanl=/ptmpp2/emc.rtmapara/com/pcpanl/para
   export TMPDIR=$DATAROOT
   export SENDDBN=NO
   export SENDDBN_NTC=NO
@@ -50,6 +51,7 @@ if [ $RUN_ENVIR = dev ]; then   # for developers
 else                            # for NCO
   export COMIN=${COMIN:-${COMROOT?:}/${NET}/${envir}}
   export COMOUT=${COMOUT:-$COMROOT/${NET}/${envir}}
+  export COMpcpanl=$COMOUT/../../pcpanl/${envir}}
 # Starting in v2.7.0: send pcprtma files with WMO headers to 
 #   $COMOUT/${RUN}.$day0/wmo/ instead of PCOM
 #  export PCOM=${PCOM:-$PCOMROOT/${NET}}/${RUN}

@@ -41,6 +41,7 @@ if [ $RUN_ENVIR = dev ]; then   # for developers
   export DATAROOT=/gpfs/dell2/stmp/Ying.Lin/pcpanl
   export COMIN=/gpfs/dell2/ptmp/$LOGNAME/pcpanl
   export COMOUT=$COMIN
+  export COMpcpanl=$COMOUT
   export TMPDIR=$DATAROOT
   export SENDDBN=NO
   export SENDDBN_NTC=NO
@@ -50,6 +51,7 @@ if [ $RUN_ENVIR = dev ]; then   # for developers
 else                            # for NCO
   export COMIN=${COMIN:-${COMROOT?:}/${NET}/${envir}}
   export COMOUT=${COMOUT:-$COMROOT/${NET}/${envir}}
+  export COMpcpanl=$COMOUT/../../pcpanl/${envir}}
 # Starting in v2.7.0: send pcprtma files with WMO headers to 
 #   $COMOUT/${RUN}.$day0/wmo/ instead of PCOM
 #  export PCOM=${PCOM:-$PCOMROOT/${NET}}/${RUN}

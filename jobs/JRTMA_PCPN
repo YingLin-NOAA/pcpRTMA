@@ -27,7 +27,7 @@ export HOMErtma=${HOMErtma:-${NWROOT:?}/rtma.${rtma_ver}}
 export FIXrtma=$HOMErtma/fix/pcprtma
 export USHrtma=$HOMErtma/ush
 # Parm files needed for toc2grib2, to add WMO header:
-export PARMrtma=$HOMErtma/parm/pcprtma
+export PARMrtma=$HOMErtma/parm/wmo/pcprtma
 export EXECrtma=$HOMErtma/exec
 export SCRIPTrtma=$HOMErtma/scripts/pcprtma
 # coltbl.xwp.wbg and g2varswmo2.tbl:
@@ -77,16 +77,6 @@ export jlogfile=$DATAROOT/jlogfile
 # Determine Job Output Name on System
 ####################################
 export pgmout="OUTPUT.$$"
-
-#########################################################################
-# Add some prod utilities to working directory
-#########################################################################
-echo "step ############# break ##############################" > ./break
-cp $UTILROOT/ush/err_chk   .; chmod +x err_chk
-cp $UTILROOT/ush/err_exit  .; chmod +x err_exit
-cp $UTILROOT/ush/prep_step .; chmod +x prep_step
-cp $UTILROOT/ush/postmsg   .; chmod +x postmsg
-cp $UTILROOT/ush/setpdy.sh .; chmod +x setpdy.sh
 
 #########################################
 #########################################

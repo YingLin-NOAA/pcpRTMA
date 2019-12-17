@@ -1,8 +1,8 @@
 #!/bin/sh
 set -x
 
-day1=20190828
-day2=20190930
+day1=20191019
+day2=20191019
 
 # theia:
 # finddate=/scratch4/NCEPDEV/rstprod/nwprod/util/ush/finddate.sh

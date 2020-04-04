@@ -108,15 +108,18 @@ echo mrmsrqilist.${date0}:
 cat mrmsrqilist.${date0}
 
 # note that files from the list above already has the *.gz suffix.  Remove
-# it for the 'rawmrms' below for ease of using $rawmrms in WGRIB2 command:
-rawmrms=`head -1 mrmsqpelist.$date0 | sed 's/.gz//'`
-err=$?
-if [ $err -ne 0 ] 
+# it for the 'rawmrms' below for ease of using $rawmrms in WGRIB2 command. 
+# However, the head -1 ... | sed ... set up means that if the list doesn't
+# exist, the line won't return a non-zero err code.  So we're checking for
+# a non-empty list first.  
+
+if [ ! -s mrmsqpelist.$date0 ]
 then
   echo 'No MRMS QPE within +/-10min from top of $date0. Exit w/o making pcpRTMA'
   exit
 fi
 
+rawmrms=`head -1 mrmsqpelist.$date0 | sed 's/.gz//'`
 cp $MRMSQPEDIR/$rawmrms.gz .
 err=$?
 if [ $err -eq 0 ]; then
@@ -226,14 +229,20 @@ fi # if we should make the RTMA file for this hour (i.e. if the MRMS file
 # Now map the raw RQI file to g184:
 # 
 # note that files from mrmsrqilist.$date0 already has the *.gz suffix.  Remove
-# it for the 'rawrqi' below for ease of using $rawrqi in WGRIB2 command:
-rawrqi=`head -1 mrmsrqilist.$date0 | sed 's/.gz//'`
-err=$?
-if [ $err -ne 0 ] 
+# it for the 'rawrqi' below for ease of using $rawrqi in WGRIB2 command. 
+# Note that files from the list above already has the *.gz suffix.  Remove
+# it for the 'rawmrms' below for ease of using $rawmrms in WGRIB2 command. 
+# However, the head -1 ... | sed ... set up means that if the list doesn't
+# exist, the line won't return a non-zero err code.  So we're checking for
+# a non-empty list first.  
+
+if [ ! -s mrmsrqilist.$date0 ]
 then
-  echo 'No MRMS RQI within +/-10min from top of $date0. Exit w/o making pcpRTMA'
+  echo 'No MRMS RQI within +/-10min from top of $date0. Exit w/o making RQI for pcpRTMA'
   exit
 fi
+
+rawrqi=`head -1 mrmsrqilist.$date0 | sed 's/.gz//'`
 
 cp $MRMSRQIDIR/$rawrqi.gz .
 err=$?

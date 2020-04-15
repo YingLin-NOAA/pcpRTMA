@@ -83,7 +83,8 @@ if [ "$envir" = dev ]; then
   export outid=rtma_`date +%H%M`
 # 
   $HOMErtma/jobs/JRTMA_PCPN
-  bsub < $HOMErtma/util.dev/send2rzdm.sh
+# 2020/04/15 Disable send to ftp in anticipation of official NCO parallel starting 04/16.
+#  bsub < $HOMErtma/util.dev/send2rzdm.sh
 else
   /nw${envir}/jobs/JRTMA_PCPN
 fi

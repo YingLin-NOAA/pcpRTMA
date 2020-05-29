@@ -186,7 +186,9 @@ if [ $err -eq 0 ]; then
     -new_grid_winds grid \
     -new_grid_interpolation budget \
     -new_grid ${WG2g184} \
-    $rtmafile
+    ${rtmafile}_tmp
+  $WGRIB2 ${rtmafile}_tmp -set_radius 1:6371200 -grib  $rtmafile
+  rm -f ${rtmafile}_tmp
 
 # Make a Stage II look-alike from the pcpRTMA:
 #  $CNVGRIB -g21 $rtmafile $rtmafile.grb1
@@ -255,7 +257,9 @@ if [ $err -eq 0 ]; then
     -new_grid_winds grid \
     -new_grid_interpolation neighbor \
     -new_grid ${WG2g184} \
-    $rtmarqi
+    ${rtmarqi}_tmp
+  $WGRIB2 ${rtmarqi}_tmp -set_radius 1:6371200 -grib $rtmarqi
+  rm -f ${rtmarqi}_tmp
 fi # if RQI file exists
 
 if test $SENDCOM = 'YES'
@@ -267,6 +271,7 @@ fi
 
 if [ $SENDDBN = 'YES' ]; then
   $DBNROOT/bin/dbn_alert MODEL RTMA2P5PCP_GB2 $job $COMOUT/${RUN}.$day0/pcprtma2.${date0}.grb2
+  $DBNROOT/bin/dbn_alert MODEL RTMA2P5PCP_GB2 $job $COMOUT/${RUN}.$day0/rqirtma.${date0}.grb2
   #
   #      SEND RTMA PRECIP. GRIB@ FILE TO AWIPS
   #
